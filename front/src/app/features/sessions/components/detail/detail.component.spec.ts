@@ -35,7 +35,7 @@ describe('DetailComponent', () => {
     date: new Date('2012-01-01'),
     teacher_id: 5,
     description: 'my description',
-    users: [1, 2, 3, 4]
+    users: [2, 4, 6, 8]
   }
 
   beforeEach(async () => {
@@ -67,6 +67,14 @@ describe('DetailComponent', () => {
   describe('unit', () => {
     it('should create', () => {
       expect(component).toBeTruthy();
+    });
+  });
+
+  describe('unit', () => {
+    it('should go back when back is called', () => {
+      const spy = jest.spyOn(window.history, 'back');
+      component.back();
+      expect(spy).toHaveBeenCalled();
     });
   });
 
@@ -109,7 +117,6 @@ describe('DetailComponent', () => {
 
   describe('integration', () => {
     it('should display the teacher information', () => {
-      // Mocking the service responses
       const mockTeacher: Teacher = {
         id: 1,
         firstName: 'Margot',
@@ -138,7 +145,6 @@ describe('DetailComponent', () => {
       jest.spyOn(sessionApiService, 'detail').mockReturnValue(of(mockSession));
 
       component.ngOnInit();
-
       fixture.detectChanges();
 
       const deleteButton = fixture.nativeElement.querySelector('button[mat-raised-button][color="warn"] mat-icon');
@@ -147,5 +153,102 @@ describe('DetailComponent', () => {
       expect(deleteButton.textContent).toContain('delete');
     });
   });
-});
 
+  describe('integration', () => {
+    it('should call delete when delete button is clicked', () => {
+      component.isAdmin = true;
+
+      jest.spyOn(sessionApiService, 'detail').mockReturnValue(of(mockSession));
+      jest.spyOn(sessionApiService, 'delete').mockReturnValue(of(mockSession));
+
+      component.ngOnInit();
+      fixture.detectChanges();
+
+      const deleteButton = fixture.nativeElement.querySelector('button[mat-raised-button][color="warn"] mat-icon');
+      deleteButton.click();
+
+      expect(sessionApiService.delete).toHaveBeenCalledWith(component.sessionId);
+    });
+  });
+
+  describe('integration', () => {
+    it('should display the participate button if the user is not an admin', () => {
+      component.isAdmin = false;
+      component.isParticipate = false;
+
+      jest.spyOn(sessionApiService, 'detail').mockReturnValue(of(mockSession));
+
+      component.ngOnInit();
+      fixture.detectChanges();
+
+      const participateButton = fixture.nativeElement.querySelector('button[mat-raised-button][color="primary"] mat-icon');
+
+      expect(participateButton).toBeTruthy();
+      expect(participateButton.textContent).toContain('person_add');
+    });
+  });
+
+  describe('integration', () => {
+    it('should call participate when participate button is clicked', () => {
+      component.isAdmin = false;
+      component.isParticipate = false;
+
+      jest.spyOn(sessionApiService, 'detail').mockReturnValue(of(mockSession));
+      jest.spyOn(sessionApiService, 'participate').mockReturnValue(of(void 0));
+
+      component.ngOnInit();
+      fixture.detectChanges();
+
+      const participateButton = fixture.nativeElement.querySelector('button[mat-raised-button][color="primary"] mat-icon');
+      participateButton.click();
+
+      expect(sessionApiService.participate).toHaveBeenCalledWith(component.sessionId, component.userId);
+    });
+  });
+
+  describe('integration', () => {
+    it('should display the unparticipate button if the user is not an admin and is participating', () => {
+      component.isAdmin = false;
+      component.isParticipate = true;
+
+      const mockSessionWithUser = {
+        ...mockSession,
+        users: [1, 2, 4, 6, 8]
+      };
+
+      jest.spyOn(sessionApiService, 'detail').mockReturnValue(of(mockSessionWithUser));
+
+      component.ngOnInit();
+      fixture.detectChanges();
+
+      const unparticipateButton = fixture.nativeElement.querySelector('button[mat-raised-button][color="warn"] mat-icon');
+
+      expect(unparticipateButton).toBeTruthy();
+      expect(unparticipateButton.textContent).toContain('person_remove');
+    });
+  });
+
+  describe('integration', () => {
+    it('should call unparticipate when unparticipate button is clicked', () => {
+      component.isAdmin = false;
+      component.isParticipate = true;
+
+      const mockSessionWithUser = {
+        ...mockSession,
+        users: [1, 2, 4, 6, 8]
+      };
+
+      jest.spyOn(sessionApiService, 'detail').mockReturnValue(of(mockSessionWithUser));
+      jest.spyOn(sessionApiService, 'unParticipate').mockReturnValue(of(void 0));
+
+      component.ngOnInit();
+      fixture.detectChanges();
+
+      const unparticipateButton = fixture.nativeElement.querySelector('button[mat-raised-button][color="warn"] mat-icon');
+      unparticipateButton.click();
+
+      expect(sessionApiService.unParticipate).toHaveBeenCalledWith(component.sessionId, component.userId);
+    });
+  });
+
+});

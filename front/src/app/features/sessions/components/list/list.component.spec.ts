@@ -68,18 +68,23 @@ describe('ListComponent', () => {
   describe('integration', () => {
     it('should display the list of sessions', () => {
       jest.spyOn(sessionApiService, 'all').mockReturnValue(of(mockSessions));
-      
+
       fixture.detectChanges();
 
-      /*const cards = fixture.debugElement.queryAll(By.css('.items mat-card.item'));
-      expect(cards.length).toBe(mockSessions.length);
-  
-      mockSessions.forEach((session, index) => {
-        const card = cards[index];
-        expect(card.nativeElement.querySelector('mat-card-title').textContent).toContain(session.name);
-        expect(card.nativeElement.querySelector('mat-card-subtitle').textContent).toContain(`Session on ${session.date.toLocaleDateString()}`);
-        expect(card.nativeElement.querySelector('p').textContent).toContain(session.description);
-      });*/
+      fixture.whenStable().then(() => {
+        fixture.detectChanges();
+
+        const items = fixture.debugElement.queryAll(By.css('.items mat-card.item'));
+        expect(items.length).toBe(mockSessions.length);
+
+        mockSessions.forEach((session, index) => {
+          const card = items[index];
+          expect(card.nativeElement.querySelector('mat-card-title').textContent).toContain(session.name);
+          expect(card.nativeElement.querySelector('mat-card-subtitle').textContent).toContain(`Session on ${session.date.toLocaleDateString()}`);
+          expect(card.nativeElement.querySelector('p').textContent).toContain(session.description);
+        });
+      });
+
     });
   });
 
@@ -91,13 +96,17 @@ describe('ListComponent', () => {
 
       fixture.detectChanges();
 
-      const createButton = fixture.nativeElement.querySelector('mat-card-header button[routerLink="create"]');
-      expect(createButton).toBeTruthy();
-      expect(createButton.textContent).toContain('Create');
+      fixture.whenStable().then(() => {
+        fixture.detectChanges();
 
-      /*const detailButton = fixture.nativeElement.querySelector('mat-card-actions button[routerLink]');
-      expect(detailButton).toBeTruthy();
-      expect(detailButton.textContent).toContain('search');*/
+        const createButton = fixture.nativeElement.querySelector('mat-card-header button[routerLink="create"]');
+        expect(createButton).toBeTruthy();
+        expect(createButton.textContent).toContain('Create');
+
+        const detailButton = fixture.nativeElement.querySelector('mat-card-actions button[routerLink]');
+        expect(detailButton).toBeTruthy();
+        expect(detailButton.textContent).toContain('search');
+      });
     });
   });
 });

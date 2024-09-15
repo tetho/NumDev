@@ -187,4 +187,80 @@ describe('FormComponent', () => {
       expect(router.navigate).toHaveBeenCalledWith(['sessions']);
     });
   });
+
+  describe('integration', () => {
+    it('should create a session when onUpdate is false', () => {
+      component.onUpdate = false;
+      component.sessionForm?.get('name')?.setValue('session 1');
+      component.sessionForm?.get('date')?.setValue(new Date('2012-01-01'));
+      component.sessionForm?.get('teacher_id')?.setValue(5);
+      component.sessionForm?.get('description')?.setValue('my description');
+
+      const mockSession: Session = {
+        name: 'session 1',
+        date: new Date('2012-01-01'),
+        teacher_id: 5,
+        description: 'my description',
+        users: []
+      };
+
+      jest.spyOn(sessionApiService, 'create').mockReturnValue(of(mockSession));
+      jest.spyOn(router, 'navigate').mockResolvedValue(true);
+
+      // Appeler la méthode submit()
+      component.submit();
+      fixture.detectChanges();
+
+      expect(sessionApiService.create).toHaveBeenCalledWith({
+        name: mockSession.name,
+        date: mockSession.date,
+        teacher_id: mockSession.teacher_id,
+        description: mockSession.description,
+      });
+
+      expect(router.navigate).toHaveBeenCalledWith(['sessions']);
+    });
+  });
+  
+  describe('integration', () => {
+    it('should initialize form for creating a new session', () => {
+      jest.spyOn(router, 'url', 'get').mockReturnValue('/sessions/create');
+
+      component.ngOnInit();
+
+      expect(component.sessionForm?.get('name')).toBeTruthy();
+      expect(component.sessionForm?.get('date')).toBeTruthy();
+      expect(component.sessionForm?.get('teacher_id')).toBeTruthy();
+      expect(component.sessionForm?.get('description')).toBeTruthy();
+    });
+  });
+
+  describe('integration', () => {
+    it('should initialize form for updating a session', () => {
+      const mockSession: Session = {
+        id: 123,
+        name: 'session 1',
+        date: new Date('2012-01-01'),
+        teacher_id: 5,
+        description: 'my description',
+        users: []
+      }
+
+      jest.spyOn(sessionApiService, 'detail').mockReturnValue(of(mockSession));
+      jest.spyOn(router, 'url', 'get').mockReturnValue('/sessions/update/123');
+      jest.spyOn(component['route'].snapshot.paramMap, 'get').mockReturnValue('123');
+
+      component.ngOnInit();
+
+      expect((component as any).id).toBe('123');
+
+      expect(sessionApiService.detail).toHaveBeenCalledWith('123');
+
+      expect(component.sessionForm?.get('name')?.value).toBe(mockSession.name);
+      const dateControlValue = component.sessionForm?.get('date')?.value;
+      expect(new Date(dateControlValue).toISOString()).toBe(mockSession.date.toISOString());
+      expect(component.sessionForm?.get('teacher_id')?.value).toBe(mockSession.teacher_id);
+      expect(component.sessionForm?.get('description')?.value).toBe(mockSession.description);
+    });
+  });
 });
